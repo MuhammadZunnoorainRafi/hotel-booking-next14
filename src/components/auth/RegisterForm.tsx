@@ -1,5 +1,5 @@
 'use client';
-import React from 'react';
+import React, { useState, useTransition } from 'react';
 import {
   Form,
   FormControl,
@@ -15,8 +15,13 @@ import { RegType } from '@/lib/types';
 import { RegSchema } from '@/lib/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import CardWrapper from './CardWrapper';
+import { register } from '@/actions/auth/register';
+import ErrorMessage from '../shared/ErrorMessage';
 
 function RegisterForm() {
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isPending, startTransition] = useTransition();
+
   const form = useForm<RegType>({
     resolver: zodResolver(RegSchema),
     defaultValues: {
@@ -27,8 +32,15 @@ function RegisterForm() {
   });
 
   const formSubmit = (formData: RegType) => {
-    console.log(formData);
+    setErrorMessage('');
+    startTransition(async () => {
+      const res = await register(formData);
+      if (res.error) {
+        setErrorMessage(res.error);
+      }
+    });
   };
+  console.log(errorMessage);
 
   return (
     <CardWrapper
@@ -41,6 +53,7 @@ function RegisterForm() {
           <FormField
             control={form.control}
             name="name"
+            disabled={isPending}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Name</FormLabel>
@@ -54,6 +67,7 @@ function RegisterForm() {
           <FormField
             control={form.control}
             name="email"
+            disabled={isPending}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Email</FormLabel>
@@ -71,6 +85,7 @@ function RegisterForm() {
           <FormField
             control={form.control}
             name="password"
+            disabled={isPending}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Password</FormLabel>
@@ -81,10 +96,11 @@ function RegisterForm() {
               </FormItem>
             )}
           />
-          <Button className="w-full" type="submit">
+          <Button disabled={isPending} className="w-full" type="submit">
             Submit
           </Button>
         </form>
+        <ErrorMessage message={errorMessage} />
       </Form>
     </CardWrapper>
   );
