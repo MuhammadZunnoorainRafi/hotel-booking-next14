@@ -40,7 +40,6 @@ function RegisterForm() {
       }
     });
   };
-  console.log(errorMessage);
 
   return (
     <CardWrapper

@@ -2,7 +2,7 @@
 import { LogSchema } from '@/lib/schemas';
 import { LogType } from '@/lib/types';
 import { zodResolver } from '@hookform/resolvers/zod';
-import React from 'react';
+import React, { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   Form,
@@ -15,8 +15,13 @@ import {
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import CardWrapper from './CardWrapper';
+import { login } from '@/actions/auth/login';
+import ErrorMessage from '../shared/ErrorMessage';
 
 function LoginForm() {
+  const [errorMessage, setErrorMessage] = useState('');
+  const [isPending, startTransition] = useTransition();
+
   const form = useForm<LogType>({
     resolver: zodResolver(LogSchema),
     defaultValues: {
@@ -26,7 +31,13 @@ function LoginForm() {
   });
 
   const formSubmit = (formData: LogType) => {
-    console.log(formData);
+    setErrorMessage('');
+    startTransition(async () => {
+      const res = await login(formData);
+      if (res?.error) {
+        setErrorMessage(res.error);
+      }
+    });
   };
 
   return (
@@ -40,6 +51,7 @@ function LoginForm() {
           <FormField
             control={form.control}
             name="email"
+            disabled={isPending}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Email</FormLabel>
@@ -57,6 +69,7 @@ function LoginForm() {
           <FormField
             control={form.control}
             name="password"
+            disabled={isPending}
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Password</FormLabel>
@@ -67,10 +80,11 @@ function LoginForm() {
               </FormItem>
             )}
           />
-          <Button className="w-full" type="submit">
+          <Button disabled={isPending} className="w-full" type="submit">
             Submit
           </Button>
         </form>
+        <ErrorMessage message={errorMessage} />
       </Form>
     </CardWrapper>
   );
