@@ -1,16 +1,14 @@
-'use client';
-import { logout } from '@/actions/auth/logout';
-import { Button } from '@/components/ui/button';
-import { useGetUserClient } from '@/hooks/getUserClient';
+import LogoutButton from '@/components/auth/LogoutButton';
+import { useGetUserServer } from '@/hooks/getUserServert';
+import { redirect } from 'next/navigation';
 
-export default function Home() {
-  const user = useGetUserClient();
+export default async function Home() {
+  const user = await useGetUserServer();
+  if (!user) redirect('/auth/login');
   return (
     <div>
       {JSON.stringify(user)}
-      <Button onClick={async () => await logout()} variant={'destructive'}>
-        Logout
-      </Button>
+      <LogoutButton />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import Credentials from 'next-auth/providers/credentials';
 import { LogSchema } from './lib/schemas';
 import { getUserByEmail } from './procedures/user/getUserByEmail';
 import bcrypt from 'bcryptjs';
+import { getUserById } from './procedures/user/getUserById';
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   adapter: PostgresAdapter(pool),
@@ -13,9 +14,20 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   pages: { signIn: '/auth/login' },
   callbacks: {
     session: async ({ session, token }) => {
+      if (token.sub && session) {
+        session.user.id = token.sub;
+        session.user.name = token.name;
+        session.user.email = token.email as string;
+      }
       return session;
     },
     jwt: async ({ token }) => {
+      if (!token.sub) return token;
+      const db = await pool.connect();
+      const user = await getUserById(token.sub, db);
+      db.release();
+      token.name = user.name;
+      token.email = user.email;
       return token;
     },
   },

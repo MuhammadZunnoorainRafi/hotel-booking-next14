@@ -5,7 +5,7 @@ import { LogSchema } from '@/lib/schemas';
 import { LogType } from '@/lib/types';
 import { getUserByEmail } from '@/procedures/user/getUserByEmail';
 import { AuthError } from 'next-auth';
-import { redirect } from 'next/navigation';
+import bcrypt from 'bcryptjs';
 
 export const login = async (formData: LogType) => {
   const db = await pool.connect();
@@ -21,6 +21,11 @@ export const login = async (formData: LogType) => {
     if (!user) {
       return { error: 'User not found' };
     }
+    const matchedPassword = await bcrypt.compare(password, user.password);
+
+    if (!matchedPassword) {
+      return { error: 'Email or Password incorrect' };
+    }
 
     await signIn('credentials', {
       email,
@@ -32,10 +37,6 @@ export const login = async (formData: LogType) => {
     if (error instanceof AuthError) {
       switch (error.type) {
         case 'CredentialsSignin':
-          return { error: 'Email or Password Incorrect' };
-        case 'OAuthSignInError':
-          return { error: error.message };
-        case 'CallbackRouteError':
           return { error: 'Email or Password Incorrect' };
         default:
           return { error: 'Something went wrong' };

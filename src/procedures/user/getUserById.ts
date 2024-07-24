@@ -1,7 +1,7 @@
 import { UserType } from '@/lib/types';
-import { Pool } from 'pg';
+import { PoolClient } from 'pg';
 
-export const getUserById = async (id: string, db: Pool) => {
+export const getUserById = async (id: string, db: PoolClient) => {
   const { rows } = await db.query<UserType>(
     `SELECT * FROM users WHERE id = $1`,
     [id]
