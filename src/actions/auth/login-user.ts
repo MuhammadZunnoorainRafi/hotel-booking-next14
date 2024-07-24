@@ -7,7 +7,7 @@ import { getUserByEmail } from '@/procedures/user/getUserByEmail';
 import { AuthError } from 'next-auth';
 import bcrypt from 'bcryptjs';
 
-export const login = async (formData: LogType) => {
+export const action_login = async (formData: LogType) => {
   const db = await pool.connect();
   try {
     const validations = LogSchema.safeParse(formData);

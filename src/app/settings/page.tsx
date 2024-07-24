@@ -8,7 +8,7 @@ export default async function Home() {
   return (
     <div>
       {JSON.stringify(user)}
-      <LogoutButton />
+      <LogoutButton>Logout</LogoutButton>
     </div>
   );
 }

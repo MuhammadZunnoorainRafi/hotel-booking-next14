@@ -15,7 +15,7 @@ import { RegType } from '@/lib/types';
 import { RegSchema } from '@/lib/schemas';
 import { zodResolver } from '@hookform/resolvers/zod';
 import CardWrapper from './CardWrapper';
-import { register } from '@/actions/auth/register';
+import { action_register } from '@/actions/auth/register-user';
 import ErrorMessage from '../shared/ErrorMessage';
 
 function RegisterForm() {
@@ -34,7 +34,7 @@ function RegisterForm() {
   const formSubmit = (formData: RegType) => {
     setErrorMessage('');
     startTransition(async () => {
-      const res = await register(formData);
+      const res = await action_register(formData);
       if (res.error) {
         setErrorMessage(res.error);
       }

@@ -6,7 +6,7 @@ import { getUserByEmail } from '@/procedures/user/getUserByEmail';
 import bcrypt from 'bcryptjs';
 import { redirect } from 'next/navigation';
 
-export const register = async (formData: RegType) => {
+export const action_register = async (formData: RegType) => {
   const db = await pool.connect();
   try {
     const validations = RegSchema.safeParse(formData);

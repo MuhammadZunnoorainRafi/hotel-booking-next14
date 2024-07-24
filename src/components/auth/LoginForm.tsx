@@ -15,7 +15,7 @@ import {
 import { Input } from '../ui/input';
 import { Button } from '../ui/button';
 import CardWrapper from './CardWrapper';
-import { login } from '@/actions/auth/login';
+import { action_login } from '@/actions/auth/login-user';
 import ErrorMessage from '../shared/ErrorMessage';
 
 function LoginForm() {
@@ -33,7 +33,7 @@ function LoginForm() {
   const formSubmit = (formData: LogType) => {
     setErrorMessage('');
     startTransition(async () => {
-      const res = await login(formData);
+      const res = await action_login(formData);
       if (res?.error) {
         setErrorMessage(res.error);
       }

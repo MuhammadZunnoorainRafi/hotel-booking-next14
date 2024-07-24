@@ -1,14 +1,9 @@
 'use client';
 import React from 'react';
-import { Button } from '../ui/button';
-import { logout } from '@/actions/auth/logout';
+import { action_logout } from '@/actions/auth/logout-user';
 
-function LogoutButton() {
-  return (
-    <Button onClick={async () => await logout()} variant={'destructive'}>
-      Logout
-    </Button>
-  );
+function LogoutButton({ children }: { children: React.ReactNode }) {
+  return <span onClick={async () => await action_logout()}>{children}</span>;
 }
 
 export default LogoutButton;
