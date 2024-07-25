@@ -2,7 +2,7 @@
 import { HotelSchema } from '@/lib/schemas';
 import { HotelType } from '@/lib/types';
 import { zodResolver } from '@hookform/resolvers/zod';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   Form,
@@ -21,6 +21,15 @@ import { useToast } from '../ui/use-toast';
 import Image from 'next/image';
 import { Loader2 } from 'lucide-react';
 import { Cross1Icon } from '@radix-ui/react-icons';
+import { useLocation } from '@/hooks/getLocation';
+import { ICity, IState } from 'country-state-city';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '../ui/select';
 
 type Props = {
   hotel?: HotelType;
@@ -29,8 +38,13 @@ type Props = {
 function HotelForm({ hotel }: Props) {
   const [image, setImage] = useState('');
   const [imageIsDeleting, setImageIsDeleting] = useState(false);
+  const [states, setStates] = useState<IState[]>([]);
+  const [cities, setCities] = useState<ICity[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  const { getAllCountries, getCountryStates, getStateCities } = useLocation();
+  const countries = getAllCountries;
   const form = useForm<HotelType>({
     resolver: zodResolver(HotelSchema),
     defaultValues: {
@@ -43,6 +57,23 @@ function HotelForm({ hotel }: Props) {
       image: '',
     },
   });
+
+  useEffect(() => {
+    const seletedCountry = form.watch('country');
+    const countryStates = getCountryStates(seletedCountry);
+    if (countryStates) {
+      setStates(countryStates);
+    }
+  }, [form.watch('country')]);
+
+  useEffect(() => {
+    const seletedCountry = form.watch('country');
+    const selectedState = form.watch('state');
+    const stateCities = getStateCities(seletedCountry, selectedState);
+    if (stateCities) {
+      setCities(stateCities);
+    }
+  }, [form.watch('country'), form.watch('state')]);
 
   const handleImageDelete = (image: string) => {
     setImageIsDeleting(true);
@@ -103,7 +134,26 @@ function HotelForm({ hotel }: Props) {
             <FormItem>
               <FormLabel>Country</FormLabel>
               <FormControl>
-                <Input {...field} type="text" />
+                <Select
+                  disabled={isLoading}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <SelectTrigger className="w-[180px] bg-background">
+                    <SelectValue
+                      placeholder="Select a Country"
+                      defaultValue={field.value}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {countries.map((country) => (
+                      <SelectItem key={country.isoCode} value={country.isoCode}>
+                        {country.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -116,7 +166,26 @@ function HotelForm({ hotel }: Props) {
             <FormItem>
               <FormLabel>State</FormLabel>
               <FormControl>
-                <Input {...field} type="text" />
+                <Select
+                  disabled={isLoading || states.length < 1}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <SelectTrigger className="w-[180px] bg-background">
+                    <SelectValue
+                      placeholder="Select a State"
+                      defaultValue={field.value}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {states.map((state) => (
+                      <SelectItem key={state.isoCode} value={state.isoCode}>
+                        {state.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -129,7 +198,26 @@ function HotelForm({ hotel }: Props) {
             <FormItem>
               <FormLabel>City</FormLabel>
               <FormControl>
-                <Input {...field} type="text" />
+                <Select
+                  disabled={isLoading || cities.length < 1}
+                  value={field.value}
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                >
+                  <SelectTrigger className="w-[180px] bg-background">
+                    <SelectValue
+                      placeholder="Select a City"
+                      defaultValue={field.value}
+                    />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {cities.map((city) => (
+                      <SelectItem key={city.name} value={city.name}>
+                        {city.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </FormControl>
               <FormMessage />
             </FormItem>
