@@ -1,7 +1,7 @@
 import React from 'react';
 import LogoutButton from './LogoutButton';
 import { ExitIcon } from '@radix-ui/react-icons';
-import { useGetUserServer } from '@/hooks/getUserServert';
+import { getUserServer } from '@/hooks/getUserServert';
 import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 import {
   DropdownMenu,

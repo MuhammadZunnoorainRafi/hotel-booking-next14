@@ -1,4 +1,4 @@
-import { useGetUserServer } from '@/hooks/getUserServert';
+import { getUserServer } from '@/hooks/getUserServert';
 import { createUploadthing, type FileRouter } from 'uploadthing/next';
 import { UploadThingError } from 'uploadthing/server';
 
@@ -7,7 +7,7 @@ const f = createUploadthing();
 export const ourFileRouter = {
   imageUploader: f({ image: { maxFileSize: '4MB' } })
     .middleware(async ({ req }) => {
-      const user = await useGetUserServer();
+      const user = await getUserServer();
       if (!user) throw new UploadThingError('Unauthorized');
       return { userId: user.id };
     })

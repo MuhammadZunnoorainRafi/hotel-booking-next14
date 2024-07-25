@@ -1,9 +1,9 @@
 import LogoutButton from '@/components/auth/LogoutButton';
-import { useGetUserServer } from '@/hooks/getUserServert';
+import { getUserServer } from '@/hooks/getUserServert';
 import { redirect } from 'next/navigation';
 
 export default async function Home() {
-  const user = await useGetUserServer();
+  const user = await getUserServer();
   if (!user) redirect('/auth/login');
   return (
     <div>

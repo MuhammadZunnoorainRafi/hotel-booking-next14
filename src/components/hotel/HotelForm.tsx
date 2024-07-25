@@ -2,7 +2,7 @@
 import { HotelSchema } from '@/lib/schemas';
 import { HotelType } from '@/lib/types';
 import { zodResolver } from '@hookform/resolvers/zod';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import {
   Form,
@@ -30,6 +30,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../ui/select';
+import { action_addHotel } from '@/actions/hotel/add-hotel';
 
 type Props = {
   hotel?: HotelType;
@@ -42,6 +43,7 @@ function HotelForm({ hotel }: Props) {
   const [cities, setCities] = useState<ICity[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const [isPending, startTransition] = useTransition();
 
   const { getAllCountries, getCountryStates, getStateCities } = useLocation();
   const countries = getAllCountries;
@@ -92,7 +94,17 @@ function HotelForm({ hotel }: Props) {
   };
 
   const formSubmit = (formData: HotelType) => {
-    console.log(formData);
+    startTransition(async () => {
+      formData.image = image;
+      const res = await action_addHotel(formData);
+      if (res.error) {
+        toast({ variant: 'destructive', description: res.error });
+      }
+      if (res.success) {
+        toast({ variant: 'success', description: res.success });
+        form.reset();
+      }
+    });
   };
 
   return (
@@ -271,6 +283,7 @@ function HotelForm({ hotel }: Props) {
                       onClientUploadComplete={(res) => {
                         console.log('Files: ', res);
                         setImage(res[0].url);
+                        form.setValue('image', res[0].url);
                         toast({
                           variant: 'success',
                           description: 'Image uploaded successfully',
@@ -291,7 +304,9 @@ function HotelForm({ hotel }: Props) {
             </FormItem>
           )}
         />
-        <Button type="submit">{hotel ? 'Edit' : 'Submit'}</Button>
+        <Button disabled={isPending} type="submit">
+          {hotel ? 'Edit' : 'Submit'}
+        </Button>
       </form>
     </Form>
   );

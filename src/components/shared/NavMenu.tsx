@@ -30,7 +30,7 @@ export function NavMenu() {
         <DropdownMenuRadioGroup value={position} onValueChange={setPosition}>
           <DropdownMenuItem
             className="cursor-pointer p-1"
-            onClick={() => router.push('/hotel/new')}
+            onClick={() => router.push('/hotels/new')}
           >
             Add Hotel
           </DropdownMenuItem>
