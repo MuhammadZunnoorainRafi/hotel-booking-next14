@@ -5,6 +5,8 @@ import { pool } from '@/lib/db';
 import { HotelSchema } from '@/lib/schemas';
 import { HotelType } from '@/lib/types';
 import { UUID } from 'crypto';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 export const action_editHotel = async (hotelId: UUID, formData: HotelType) => {
   const db = await pool.connect();
@@ -39,11 +41,13 @@ export const action_editHotel = async (hotelId: UUID, formData: HotelType) => {
     if (!rows[0]) {
       return { error: 'Hotel not updated' };
     }
-    return { success: 'Hotel updated successfully' };
   } catch (error) {
     console.log(error);
     return { error: 'Internal Server Error' };
   } finally {
     db.release();
   }
+  revalidatePath('/hotels');
+  redirect('/hotels');
+  return { success: 'Hotel updated successfully' };
 };
