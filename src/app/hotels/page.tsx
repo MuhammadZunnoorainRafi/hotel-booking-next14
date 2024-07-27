@@ -1,13 +1,14 @@
 import { action_getHotels } from '@/actions/hotel/get-hotels';
+import HotelCard from '@/components/hotel/HotelCard';
 import React from 'react';
 
 async function Hotels() {
   const hotels = await action_getHotels();
   if (!hotels) return <p>Hotels not found</p>;
   return (
-    <div>
-      {hotels.map((val) => (
-        <p key={val.id}>{val.title}</p>
+    <div className="grid grid-cols-3 py-10 place-items-center">
+      {hotels.map((hotel) => (
+        <HotelCard key={hotel.id} hotel={hotel} />
       ))}
     </div>
   );

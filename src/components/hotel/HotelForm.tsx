@@ -1,6 +1,6 @@
 'use client';
 import { HotelSchema } from '@/lib/schemas';
-import { HotelType } from '@/lib/types';
+import { HotelType, HotelTypeDb } from '@/lib/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 import React, { useEffect, useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
@@ -31,14 +31,14 @@ import {
   SelectValue,
 } from '../ui/select';
 import { action_addHotel } from '@/actions/hotel/add-hotel';
+import { action_editHotel } from '@/actions/hotel/edit-hotel';
 
 type Props = {
-  hotel?: HotelType;
+  hotel?: HotelTypeDb;
 };
 
 function HotelForm({ hotel }: Props) {
   const [image, setImage] = useState('');
-  const [imageIsDeleting, setImageIsDeleting] = useState(false);
   const [states, setStates] = useState<IState[]>([]);
   const [cities, setCities] = useState<ICity[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -61,6 +61,15 @@ function HotelForm({ hotel }: Props) {
   });
 
   useEffect(() => {
+    if (hotel) {
+      form.reset(hotel);
+      setImage(hotel.image);
+      // form.setValue('country', hotel.country);
+      // form.setValue('state', hotel.state);
+      // form.setValue('city', hotel.city);
+    }
+  }, [form, hotel]);
+  useEffect(() => {
     const seletedCountry = form.watch('country');
     const countryStates = getCountryStates(seletedCountry);
     if (countryStates) {
@@ -77,26 +86,12 @@ function HotelForm({ hotel }: Props) {
     }
   }, [form.watch('country'), form.watch('state')]);
 
-  const handleImageDelete = (image: string) => {
-    setImageIsDeleting(true);
-    const imageKey = image.substring(image.lastIndexOf('/') + 1);
-    fetch('/api/uploadthing/delete', {
-      method: 'DELETE',
-      body: JSON.stringify({ imageKey }),
-    }).then((res) => {
-      if (res.ok) {
-        toast({ variant: 'success', description: 'Image removed' });
-      } else {
-        toast({ variant: 'destructive', description: 'something went wrong' });
-      }
-    });
-    setImageIsDeleting(false);
-  };
-
   const formSubmit = (formData: HotelType) => {
     startTransition(async () => {
       formData.image = image;
-      const res = await action_addHotel(formData);
+      const res = hotel
+        ? await action_editHotel(hotel.id, formData)
+        : await action_addHotel(formData);
       if (res.error) {
         toast({ variant: 'destructive', description: res.error });
       }
@@ -150,12 +145,12 @@ function HotelForm({ hotel }: Props) {
                   disabled={isLoading}
                   value={field.value}
                   onValueChange={field.onChange}
-                  defaultValue={field.value}
+                  defaultValue={hotel?.country}
                 >
                   <SelectTrigger className="w-[180px] bg-background">
                     <SelectValue
                       placeholder="Select a Country"
-                      defaultValue={field.value}
+                      defaultValue={hotel?.country}
                     />
                   </SelectTrigger>
                   <SelectContent>
@@ -268,13 +263,6 @@ function HotelForm({ hotel }: Props) {
                       alt="Image Error"
                       className="object-contain"
                     />
-                    <Button
-                      variant="ghost"
-                      className="absolute righ-[-12px] top-0"
-                      onClick={() => handleImageDelete(image)}
-                    >
-                      {imageIsDeleting ? <Loader2 /> : <Cross1Icon />}
-                    </Button>
                   </div>
                 ) : (
                   <div className="flex items-center justify-center p-6 border-2 border-dashed w-full border-primary/50 rounded mt-4">
