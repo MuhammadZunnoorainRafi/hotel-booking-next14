@@ -1,6 +1,6 @@
 'use client';
-import React, { useTransition } from 'react';
-import { Card, CardContent, CardHeader } from '../ui/card';
+import React, { useEffect, useState, useTransition } from 'react';
+import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
 import { HotelTypeDb } from '@/lib/types';
 import Image from 'next/image';
 import { Button } from '../ui/button';
@@ -8,13 +8,31 @@ import Link from 'next/link';
 import { DeleteIcon, EditIcon } from 'lucide-react';
 import { action_deleteHotel } from '@/actions/hotel/delete-hotel';
 import { useToast } from '../ui/use-toast';
+import { DatePickerWithRange } from './DateRangePicker';
+import { DateRange } from 'react-day-picker';
+import { addDays, differenceInCalendarDays } from 'date-fns';
 
 type Props = {
   hotel: HotelTypeDb;
 };
 function HotelCard({ hotel }: Props) {
   const [isPending, startTransition] = useTransition();
+  const [date, setDate] = React.useState<DateRange | undefined>({
+    from: new Date(2022, 0, 20),
+    to: addDays(new Date(2022, 0, 20), 0),
+  });
+  const [days, setDays] = useState(0);
   const { toast } = useToast();
+
+  const [totalPrice, setTotalPrice] = useState(0);
+
+  useEffect(() => {
+    if (date && date.from && date.to) {
+      const dayCount = differenceInCalendarDays(date.to, date.from);
+      setDays(dayCount);
+      setTotalPrice(dayCount * 70);
+    }
+  }, [date]);
 
   const handleDelete = async () => {
     startTransition(async () => {
@@ -78,6 +96,14 @@ function HotelCard({ hotel }: Props) {
           ))}
         </div>
       </CardContent>
+      <CardFooter>
+        <DatePickerWithRange date={date} setDate={setDate} />
+      </CardFooter>
+      <CardFooter>
+        <h1>
+          Total Price is ${totalPrice} for {days} days
+        </h1>
+      </CardFooter>
     </Card>
   );
 }
