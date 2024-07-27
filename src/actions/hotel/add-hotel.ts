@@ -4,6 +4,8 @@ import { getUserServer } from '@/hooks/getUserServert';
 import { pool } from '@/lib/db';
 import { HotelSchema } from '@/lib/schemas';
 import { HotelType } from '@/lib/types';
+import { revalidatePath } from 'next/cache';
+import { redirect } from 'next/navigation';
 
 export const action_addHotel = async (formData: HotelType) => {
   const db = await pool.connect();
@@ -25,11 +27,13 @@ export const action_addHotel = async (formData: HotelType) => {
     if (!rows[0]) {
       return { error: 'Hotel not created' };
     }
-    return { success: 'Hotel Created' };
   } catch (error) {
     console.log(error);
     return { error: 'Internal Server Error' };
   } finally {
     db.release();
   }
+  revalidatePath('/hotels');
+  redirect('/hotels');
+  return { success: 'Hotel Created' };
 };

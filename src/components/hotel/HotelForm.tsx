@@ -38,7 +38,7 @@ type Props = {
 };
 
 function HotelForm({ hotel }: Props) {
-  const [image, setImage] = useState('');
+  const [image, setImage] = useState(hotel?.image);
   const [states, setStates] = useState<IState[]>([]);
   const [cities, setCities] = useState<ICity[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -49,7 +49,7 @@ function HotelForm({ hotel }: Props) {
   const countries = getAllCountries;
   const form = useForm<HotelType>({
     resolver: zodResolver(HotelSchema),
-    defaultValues: {
+    defaultValues: hotel || {
       title: '',
       description: '',
       country: '',
@@ -60,15 +60,6 @@ function HotelForm({ hotel }: Props) {
     },
   });
 
-  useEffect(() => {
-    if (hotel) {
-      form.reset(hotel);
-      setImage(hotel.image);
-      // form.setValue('country', hotel.country);
-      // form.setValue('state', hotel.state);
-      // form.setValue('city', hotel.city);
-    }
-  }, [form, hotel]);
   useEffect(() => {
     const seletedCountry = form.watch('country');
     const countryStates = getCountryStates(seletedCountry);
@@ -87,8 +78,10 @@ function HotelForm({ hotel }: Props) {
   }, [form.watch('country'), form.watch('state')]);
 
   const formSubmit = (formData: HotelType) => {
-    startTransition(async () => {
+    if (image) {
       formData.image = image;
+    }
+    startTransition(async () => {
       const res = hotel
         ? await action_editHotel(hotel.id, formData)
         : await action_addHotel(formData);
@@ -97,7 +90,6 @@ function HotelForm({ hotel }: Props) {
       }
       if (res.success) {
         toast({ variant: 'success', description: res.success });
-        form.reset();
       }
     });
   };
@@ -145,12 +137,12 @@ function HotelForm({ hotel }: Props) {
                   disabled={isLoading}
                   value={field.value}
                   onValueChange={field.onChange}
-                  defaultValue={hotel?.country}
+                  defaultValue={field.value}
                 >
                   <SelectTrigger className="w-[180px] bg-background">
                     <SelectValue
                       placeholder="Select a Country"
-                      defaultValue={hotel?.country}
+                      defaultValue={field.value}
                     />
                   </SelectTrigger>
                   <SelectContent>
